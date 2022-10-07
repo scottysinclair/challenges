@@ -73,6 +73,9 @@ data class Fraction(val top: Long, val bottom: Long) {
 
 
 class FractionTestNode(val parent: FractionTestNode?, val numberSpec: NumberSpec, val fraction: Fraction) {
+   fun isCompletelyAccurate() : Boolean {
+      return numberOfDigitsAccurate() == numberSpec.getRequiredPrecision()
+   }
    fun numberOfDigitsAccurate() : Int {
       var charsSpec = numberSpec.toBigDecimal().toPlainString().toList()
       var charsNode = getFractionAsDecimal().toPlainString().toList()
@@ -104,8 +107,10 @@ class FractionTestNode(val parent: FractionTestNode?, val numberSpec: NumberSpec
       return nodeDigit - specDigit
    }
    fun getFractionAsDecimal() : BigDecimal {
-      return fraction.toBigDecimal(numberSpec.getRequiredPrecision(), numberSpec.getRequiredScale())
+      //plus 1 because we need the round up to occur after the required precision so we match (0.66666666)7  and not (0.66666667)
+      return fraction.toBigDecimal(numberSpec.getRequiredPrecision() + 1, numberSpec.getRequiredScale() + 1)
    }
+
    fun getDifferenceFromSpec() : BigDecimal  {
       return getFractionAsDecimal() - numberSpec.toBigDecimal()
    }
@@ -123,15 +128,18 @@ class FractionTestNode(val parent: FractionTestNode?, val numberSpec: NumberSpec
       else parent.depth() + 1
    }
    override fun toString() : String {
-      return "$numberSpec   $fraction  ${getFractionAsDecimal()}  ${numberOfDigitsAccurate()}"
+      return if (isCompletelyAccurate()) {
+         "$numberSpec  => $fraction  Fully accurate to ${numberOfDigitsAccurate()} decimal places ✅"
+      }
+      else "$numberSpec  => $fraction  Accurate only to ${numberOfDigitsAccurate()} decimal places ❌"
    }
 }
 
 fun fraction(text : String) : FractionTestNode {
    val numberSpec = NumberSpec(text)
    var fractionTestNode = FractionTestNode(null, numberSpec, Fraction(numberSpec.beforePoint.toLong(), 1))
-   while(fractionTestNode.depth() < 100 && fractionTestNode.numberOfDigitsAccurate() != fractionTestNode.numberSpec.getRequiredPrecision()) {
-      println(fractionTestNode)
+   while(fractionTestNode.depth() < 1000 && fractionTestNode.isCompletelyAccurate().not()) {
+      //println(fractionTestNode)
       val accuracy = fractionTestNode.numberOfDigitsAccurate()
       if (accuracy < fractionTestNode.numberSpec.getRequiredPrecision()) {
          val cmp = fractionTestNode.differenceAt(accuracy + 1)
@@ -141,7 +149,6 @@ fun fraction(text : String) : FractionTestNode {
          }
       }
    }
-   println(fractionTestNode)
    return fractionTestNode
 }
 
@@ -159,15 +166,15 @@ class FractionTest {
 
       "1.(1)".let { println("$it   =>    ${fraction(it)}") }
 
-//      "0.(6)".let { println("$it   =>    ${fraction(it)}") }
+      "0.(6)".let { println("$it   =>    ${fraction(it)}") }
 
-//      fraction("3.(142857)")
+      "3.(142857)".let { println("$it   =>    ${fraction(it)}") }
 
-      //fraction("0.19(2367)")
-/*
-      fraction("0.1097(3)")
+      "3.(142857)".let { println("$it   =>    ${fraction(it)}") }
 
- */
+      "0.19(2367)".let { println("$it   =>    ${fraction(it)}") }
+
+      "0.1097(3)".let { println("$it   =>    ${fraction(it)}") }
    }
 }
 
