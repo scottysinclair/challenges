@@ -113,8 +113,8 @@ class FractionTestNode(val parent: FractionTestNode?, val numberSpec: NumberSpec
     * and returns the number of digits accurate.
     */
    fun numberOfDigitsAccurate() : Int {
-      var charsSpec = numberSpec.toBigDecimal().toPlainString().toList()
-      var charsNode = getFractionAsDecimal().toPlainString().toList()
+      val charsSpec = numberSpec.toBigDecimal().toPlainString().toList()
+      val charsNode = getFractionAsDecimal().toPlainString().toList()
       var count = 0
       var i = 0
       while(i <= numberSpec.getRequiredPrecision() && charsSpec[i] == charsNode[i]) {
@@ -127,7 +127,7 @@ class FractionTestNode(val parent: FractionTestNode?, val numberSpec: NumberSpec
    /**
     * Gets the digit at a given position in the number
     */
-   fun getDigitAtPosition(number: String, pos: Int) : Int {
+   private fun getDigitAtPosition(number: String, pos: Int) : Int {
       var digitCount = 0
       var i = 0
       while(i < number.length && digitCount < pos) {
@@ -155,7 +155,7 @@ class FractionTestNode(val parent: FractionTestNode?, val numberSpec: NumberSpec
     * gets the Fraction as a BigDecimal which has the required precision + 1. The '+1' ensures
     * that no rounding will occur with the required precision part of the BigDecimal
     */
-   fun getFractionAsDecimal() : BigDecimal {
+   private fun getFractionAsDecimal() : BigDecimal {
       //plus 1 because we need the round up to occur after the required precision so we match (0.66666666)7  and not (0.66666667)
       return fraction.toBigDecimal(numberSpec.getRequiredPrecision() + 1, numberSpec.getRequiredScale() + 1)
    }
